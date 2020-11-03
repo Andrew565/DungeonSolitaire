@@ -1,29 +1,25 @@
 import promptMaker from "prompt-sync";
 import { beginGame } from "./index.js";
+import { cL } from "./LevelState.js";
 const prompt = promptMaker({ sigint: true });
 const { GameState } = require("./GameState");
 
-/** @param {string} obstacleType */
-async function askForNextMove(obstacleType) {
+async function askForNextMove() {
+  //TODO: askForNextMove - WIP
   // Ask user if they want to draw another card (if *allowed*), continue going down (if allowed), continue going up, or use a spell (Jack of Hearts or Spell of Light).
-
+  const obstacleType = cL().obstacleType;
   if (obstacleType !== "None") {
     const usableSpells = GameState.getRelatedSpells(obstacleType);
     console.log("You have in your spellbook the following:\n");
     usableSpells.forEach((card, i) => console.log(`${i + 1}) ${card.name}\n`));
     const choice = prompt("Type the number of the spell you would like to use, or type 'c' to continue.");
 
-    if (choice !== "c") {
-      await GameState.useSpell(Number(choice));
+    if (choice !== "c" && choice !== null) {
+      await GameState.useSpell(usableSpells[Number(choice)]);
     }
   }
 
   // Stashed until needed: GameState.moveToNewFloor
-}
-
-/** @param {import("./GameState.js").Standard52Card[]} spell */
-function askToUseSpell(spell) {
-  // TODO: askToUseSpell
 }
 
 function died() {
@@ -73,8 +69,7 @@ function won() {
 
 /**
  * @typedef {object} Announcer
- * @property {(obstacleType: string) => Promise<void>} askForNextMove
- * @property {(spell: import("./index.js").Standard52Card[]) => void} askToUseSpell
+ * @property {() => Promise<void>} askForNextMove
  * @property {() => void} died
  * @property {() => void} lostInTheDark
  * @property {() => void} preamble
@@ -84,7 +79,6 @@ function won() {
 /** @type {Announcer} */
 export const Announce = {
   askForNextMove,
-  askToUseSpell,
   died,
   lostInTheDark,
   preamble,

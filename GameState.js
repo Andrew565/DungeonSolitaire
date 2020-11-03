@@ -1,8 +1,10 @@
 /** @typedef {import("@andrewcreated/deck-of-cards.js/dist/standard52CardsAndJokers").Standard52Card} Standard52Card */
 
-import { LevelStates, levelTemplate } from "./LevelState";
+import { cL, LevelStates, levelTemplate } from "./LevelState";
+import * as CardUtilities from "./CardUtilities";
 
-/** @typedef {Object} GameState
+/**
+ * @typedef {Object} GameState
  * @property {boolean} gameOver
  * @property {number} health
  * @property {number} level
@@ -42,7 +44,7 @@ export const GameState = {
   moveToNewFloor(direction = "down") {
     this.travelingUp = direction === "up";
     this.level = this.travelingUp ? ++this.level : --this.level;
-    LevelStates.unshift({ ...levelTemplate, floorId: this.level + this.direction });
+    LevelStates.addLevel({ ...levelTemplate, floorId: this.level + this.direction });
   },
 
   get currentScore() {
@@ -53,19 +55,20 @@ export const GameState = {
     return hasJoker ? treasureValue + 6 : treasureValue;
   },
 
-  getRelatedSpells(obstacleType) {
+  getRelatedSpells() {
     const obstaclesAndSuitsMap = {
       Monster: "Spades",
       Trap: "Diamonds",
       Door: "Clubs",
     };
     return this.spells.filter((card) => {
-      if (obstaclesAndSuitsMap[obstacleType] === card.suit) return card;
+      if (obstaclesAndSuitsMap[cL().obstacleType] === card.suit) return card;
       return false;
     });
   },
 
   async useSpell(spell) {
-    // TODO: useSpell()
+    if (spell.nameRank === "Jack") return CardUtilities.applyJack(spell);
+    if (spell.nameRank === "Joker") return CardUtilities.applyJoker(spell);
   },
 };

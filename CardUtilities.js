@@ -2,27 +2,62 @@
 
 import { cL } from "./LevelState";
 import { GameState } from "./GameState";
+import { baseDeck } from ".";
 
 /** @param {Standard52Card} card */
 export const isSpecial = (card) => ["Jack", "Queen", "Ace", "Joker"].includes(card.nameRank);
 
-const handleQueen = () => {
+const applyQueen = () => {
   console.log(
     "One of the four goddesses has deemed to shine down on you. Whatever obstacle you encounter this level will automatically be defeated."
   );
-  cL.goddessFound = true;
+  cL().goddessFound = true;
 };
 
-const handleAce = () => {
+const applyAce = () => {
   console.log("A strong wind rushes through the tunnel you stand in, blowing out one of your torches.");
   GameState.torchesBlownOut++;
   console.log(`You have ${4 - GameState.torchesBlownOut} torches left.`);
 };
 
+/** @param {Standard52Card} card */
+export const applyJack = (card) => {
+  // TODO: applyJack - WIP
+  const { suit } = card;
+  switch (suit) {
+    case "Hearts":
+      // TODO: Prevents 1 round's damage
+      break;
+    case "Clubs":
+      // TODO: Opens a sealed door
+      break;
+    case "Spades":
+      // TODO: Defeats a monster
+      break;
+    case "Diamonds":
+      // TODO: Disarms a trap
+      break;
+  }
+  // TODO: Discard the card for rest of the game
+};
+
+/** @param {Standard52Card} card */
+export const applyJoker = (card) => {
+  // TODO: applyJoker - WIP
+  GameState.torchesBlownOut--;
+  const firstAceIndex = cL().cards.findIndex((/** @type {Standard52Card} */ card) => card.nameRank === "Ace");
+
+  /** @type {Standard52Card[]} */
+  const firstAce = cL().cards.splice(firstAceIndex, 1);
+  baseDeck.addToBottomOfDrawPile(firstAce);
+
+  baseDeck.addToDiscardPile([card]);
+};
+
 const SpecialCardHandlers = {
   Jack: GameState.addToSpellBook,
-  Queen: handleQueen,
-  Ace: handleAce,
+  Queen: applyQueen,
+  Ace: applyAce,
   Joker: GameState.addToSpellBook,
 };
 
@@ -42,4 +77,6 @@ export const pullOutDiamonds = (cards) => {
       diamondCards.push(card);
     }
   }
+
+  return diamondCards;
 };

@@ -55,10 +55,17 @@ export const levelTemplate = {
   },
 };
 
-// Initializes the "LevelStates" container, along with an example of adding a new level
-/** @type {LevelTemplate[]} */
-export const LevelStates = [{ ...levelTemplate, floorId: "0" }];
+class LevelState {
+  _levels = [{ ...levelTemplate, floorId: "0" }];
 
-/** @returns {LevelTemplate} */
-export const currentLevel = LevelStates[0];
-export const cL = currentLevel;
+  addLevel(newLevel) {
+    this._levels.push(newLevel);
+  }
+
+  get current() {
+    return this._levels[this._levels.length - 1];
+  }
+}
+
+export const LevelStates = new LevelState();
+export const cL = () => LevelStates.current;
