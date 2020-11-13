@@ -1,5 +1,5 @@
 import promptMaker from "prompt-sync";
-import { beginGame } from "./index.js";
+import { DungeonSolitaire } from "./DungeonSolitaireGame";
 import { cL } from "./LevelState.js";
 const prompt = promptMaker({ sigint: true });
 const { GameState } = require("./GameState");
@@ -63,7 +63,7 @@ function won() {
   const answer = prompt("Do you wish to try again? Y/N");
 
   if (answer === "Y" || answer === "y") {
-    beginGame();
+    DungeonSolitaire.beginGame();
   }
 }
 
