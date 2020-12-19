@@ -15,7 +15,7 @@ import * as CardUtilities from "./CardUtilities";
  * @property {Standard52Card[]} treasure
  * @property {string} direction
  * @property {(card: Standard52Card) => void} addToSpellBook
- * @property {(direction?: string) => void} moveToNewFloor
+ * @property {(direction?: string) => void} getNextFloor
  * @property {number} currentScore
  * @property {(obstacleType: string) => Standard52Card[]} getRelatedSpells
  * @property {(spellNumber: Standard52Card) => Promise<void>} useSpell
@@ -41,10 +41,10 @@ export const GameState = {
     this.spells.push(card);
   },
 
-  moveToNewFloor(direction = "down") {
+  getNextFloor(direction = "down") {
     this.travelingUp = direction === "up";
     this.level = this.travelingUp ? ++this.level : --this.level;
-    LevelStates.addLevel({ ...levelTemplate, floorId: this.level + this.direction });
+    return this.level;
   },
 
   get currentScore() {

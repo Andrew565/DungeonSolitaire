@@ -28,22 +28,18 @@ export const applyJack = (card) => {
     case "Hearts":
       // TODO: Prevents 1 round's damage
       break;
-    case "Clubs":
-      // TODO: Opens a sealed door
-      break;
     case "Spades":
-      // TODO: Defeats a monster
-      break;
-    case "Diamonds":
-      // TODO: Disarms a trap
-      break;
+      // Defeats a monster
+      cL().monsterHP = 0;
+    default:
+      cL().obstacleCleared = true;
   }
-  // TODO: Discard the card for rest of the game
+  // Discard the card for rest of the game
+  baseDeck.addToDiscardPile([card]);
 };
 
 /** @param {Standard52Card} card */
 export const applyJoker = (card) => {
-  // TODO: applyJoker - WIP
   GameState.torchesBlownOut--;
   const firstAceIndex = cL().cards.findIndex((/** @type {Standard52Card} */ card) => card.nameRank === "Ace");
 
