@@ -1,5 +1,3 @@
-/** @typedef {import("@andrewcreated/deck-of-cards.js/dist/standard52CardsAndJokers").Standard52Card} Standard52Card */
-
 import { GameState } from "./GameState";
 
 /**
@@ -12,6 +10,7 @@ import { GameState } from "./GameState";
  * @property {boolean} obstacleCleared
  * @property  {ObstacleType | undefined} obstacleType
  * @property {boolean} goddessFound
+ * @property {boolean} applyJackOfHearts
  * @property {() => string | undefined} getObstacleName
  * @property {VoidFunc} assignTreasures
  * @property {VoidFunc} announceFloor
@@ -28,6 +27,7 @@ export const levelTemplate = {
   obstacleCleared: false,
   obstacleType: undefined,
   goddessFound: false,
+  applyJackOfHearts: false,
 
   getObstacleName() {
     return this.obstacle ? this.obstacle.name : undefined;

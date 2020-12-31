@@ -6,7 +6,6 @@ import { getCardType } from "./CardUtilities";
 const prompt = promptMaker({ sigint: true });
 const log = console.log;
 
-//TODO: askForNextMove - WIP
 // Ask user if they want to draw another card (if *allowed*), continue going down (if allowed), continue/start going up, or use a spell (Jack of Hearts or Spell of Light).
 function askForNextMove() {
   const canDrawCard = cL().obstacleCleared !== true;
@@ -20,7 +19,6 @@ function askForNextMove() {
   }
   log("You may use a (s)pell, if you have one you can use.");
   const choice = prompt("What do you decide to do?");
-  // TODO: Handle next move choice (maybe return to DSG to handle?)
   return choice;
 }
 

@@ -24,15 +24,15 @@ const applyAce = () => {
 
 /** @param {Standard52Card} card */
 export const applyJack = (card) => {
-  // TODO: applyJack - WIP
   const { suit } = card;
   switch (suit) {
     case "Hearts":
       // Prevents 1 round's damage
       if (cL().obstacleType === "Monster") {
-        // TODO: Figure out when applyJack is being called so we can figure out how to apply the 'healing'.
+        cL().applyJackOfHearts = true;
+      } else {
+        Announce.cannotUseJackOfHeartsHere();
       }
-      Announce.cannotUseJackOfHeartsHere();
       break;
     case "Spades":
       // Defeats a monster
