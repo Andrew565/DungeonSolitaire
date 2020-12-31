@@ -1,6 +1,6 @@
 /** @typedef {import("@andrewcreated/deck-of-cards.js/dist/standard52CardsAndJokers").Standard52Card} Standard52Card */
 
-import { cL, LevelStates, levelTemplate } from "./LevelState";
+import { cL, LevelStates } from "./LevelState";
 import * as CardUtilities from "./CardUtilities";
 
 /**
@@ -15,10 +15,10 @@ import * as CardUtilities from "./CardUtilities";
  * @property {Standard52Card[]} treasure
  * @property {string} direction
  * @property {(card: Standard52Card) => void} addToSpellBook
- * @property {(direction?: string) => void} getNextFloor
+ * @property {(direction?: string) => void} moveToNextFloor
  * @property {number} currentScore
- * @property {(obstacleType: string) => Standard52Card[]} getRelatedSpells
- * @property {(spellNumber: Standard52Card) => Promise<void>} useSpell
+ * @property {(obstacleType: ObstacleType) => Standard52Card[]} getRelatedSpells
+ * @property {(spell: Standard52Card) => void} useSpell
  */
 
 /** @type {GameState} */
@@ -36,20 +36,21 @@ export const GameState = {
     return this.level === 0 ? "" : this.travelingUp ? "up" : "down";
   },
 
-  /** @param {Standard52Card} card */
   addToSpellBook(card) {
     this.spells.push(card);
   },
 
-  getNextFloor(direction = "down") {
+  moveToNextFloor(direction = "down") {
     this.travelingUp = direction === "up";
     this.level = this.travelingUp ? ++this.level : --this.level;
-    return this.level;
+    LevelStates.addLevel(this.level);
   },
 
   get currentScore() {
     const treasureValue = this.treasure.reduce((score, card) => {
-      return card.nameRank === "King" ? score + 10 : score + card.numberRank + 2;
+      return card.nameRank === "King"
+        ? score + 10
+        : score + card.numberRank + 2;
     }, 0);
     const hasJoker = this.spells.find((card) => card.nameRank === "Joker");
     return hasJoker ? treasureValue + 6 : treasureValue;
@@ -67,7 +68,7 @@ export const GameState = {
     });
   },
 
-  async useSpell(spell) {
+  useSpell(spell) {
     if (spell.nameRank === "Jack") return CardUtilities.applyJack(spell);
     if (spell.nameRank === "Joker") return CardUtilities.applyJoker(spell);
   },

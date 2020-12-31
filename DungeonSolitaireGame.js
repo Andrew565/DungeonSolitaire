@@ -1,60 +1,56 @@
-import promptMaker from "prompt-sync";
-const prompt = promptMaker({ sigint: true });
 import { GameState } from "./GameState";
 import { cL } from "./LevelState";
 import * as CardUtilities from "./CardUtilities";
 import { Announce } from "./Announce";
 import { baseDeck } from ".";
 
-/** @typedef {import("@andrewcreated/deck-of-cards.js/dist/standard52CardsAndJokers").Standard52Card} Standard52Card */
-
-// TODO: Take GameState.moveToNewFloor, split out the LevelState.add part, change the rest into GameState.getNextFloor
-// TODO: Pull out the innards of the while loop into their own proper function
-// TODO: Move obstacle handling from checkForObstacle into handleRoundEnd
-
+/**
+ * @param {Standard52Card} card
+ */
 export const checkForObstacle = (card) => {
-  cL().obstacleAttempted = true;
+  const currentLevel = cL();
+  currentLevel.obstacleAttempted = true;
 
   // If no obstacle, make this card the obstacle
-  if (!cL().obstacle) {
-    cL().obstacle = card;
+  if (!currentLevel.obstacle) {
+    currentLevel.obstacle = card;
     return;
   }
 
   // Check if card beats the obstacle
-  if (cL().obstacle.numberRank > card.numberRank) {
+  if (currentLevel.obstacle.numberRank > card.numberRank) {
     // Card doesn't beat obstacle, check if monster (keep trying) or lose the level
-    if (cL().obstacleType === "Monster") {
+    if (currentLevel.obstacleType === "Monster") {
       // Reduce monsterHP by card's value
-      cL().monsterHP -= card.numberRank;
+      currentLevel.monsterHP -= card.numberRank;
 
       // Check if we cleared the level
-      if (cL().monsterHP <= 0) {
-        cL().obstacleCleared = true;
+      if (currentLevel.monsterHP <= 0) {
+        currentLevel.obstacleCleared = true;
       } else {
         /** Health has to be subtracted by numberRank + 2 due to rank[0] === 2 */
-        GameState.health -= cL().obstacle.numberRank + 2;
+        GameState.health -= currentLevel.obstacle.numberRank + 2;
       }
     } else {
       // Take damage and lose treasure if Trap, just lose treasure if Door
-      const diamondCards = CardUtilities.pullOutDiamonds(cL().cards);
+      const diamondCards = CardUtilities.pullOutDiamonds(currentLevel.cards);
 
       // Make sure at least one card remains, even if it's a diamond
-      if (cL().cards.length < 1) {
-        const lowestDiamond = cL().cards.reduce((lowestCard, aCard) => {
+      if (currentLevel.cards.length < 1) {
+        const lowestDiamond = currentLevel.cards.reduce((lowestCard, aCard) => {
           if (aCard.numberRank > lowestCard.numberRank) lowestCard = aCard;
           return lowestCard;
         }, diamondCards[0]);
-        cL().cards.push(lowestDiamond);
+        currentLevel.cards.push(lowestDiamond);
       }
 
-      if (cL().obstacleType === "Trap") {
-        GameState.health -= cL().obstacle.numberRank + 2;
+      if (currentLevel.obstacleType === "Trap") {
+        GameState.health -= currentLevel.obstacle.numberRank + 2;
       }
     }
   } else {
     // Card beats the obstacle, so we mark it cleared
-    cL().obstacleCleared = true;
+    currentLevel.obstacleCleared = true;
   }
 };
 
@@ -81,31 +77,26 @@ export const handleRoundEnd = () => {
     return Announce.won;
   }
 
-  let hasObstacle = false;
-  if (cL().obstacle && !cL().obstacleCleared) {
-    hasObstacle = true;
-  }
-
   // Ask user if they want to draw another card (if *allowed*), continue going down (if allowed), continue going up, or use a spell (Jack of Hearts or Spell of Light).
   return () => Announce.askForNextMove();
 };
 
 export const doAGameRound = () => {
+  GameState.moveToNextFloor();
   const newCard = baseDeck.drawFromDrawPile(1)[0];
-  console.log("You drew the ", newCard.name);
+  Announce.newCard(newCard);
 
-  /** @param {boolean} specialCard */
   const specialCard = CardUtilities.isSpecial(newCard);
-
   if (specialCard) return CardUtilities.handleSpecialCard(newCard);
 
   // Check if user has a spell available
-  const relatedSpells = cL().obstacleType && GameState.getRelatedSpells(cL().obstacleType);
+  const relatedSpells =
+    cL().obstacleType && GameState.getRelatedSpells(cL().obstacleType);
   if (relatedSpells) {
     // Ask user if they want to use the spell
     // TODO: Need to fix where exactly we're handling spell usage stuff (here, GameState, Announce?)
     // Much of the desired functionality can be found in Announcer#askForNextMove, which could probably move to a controller of some kind, perhaps?
-    Announce.askForNextMove();
+    Announce.announceRelatedSpells(relatedSpells);
   }
 
   // Add the card to the stack of cards for this level
@@ -116,22 +107,21 @@ export const doAGameRound = () => {
 
   const nextAction = handleRoundEnd();
   if (nextAction) nextAction();
-}
+};
 
 export const beginGame = () => {
   Announce.preamble();
 
   baseDeck.shuffle(3);
 
-  GameState.moveToNewFloor();
-
   while (!GameState.gameOver) {
-
+    doAGameRound();
   }
 };
 
 export const DungeonSolitaire = {
   beginGame,
   checkForObstacle,
+  doAGameRound,
   handleRoundEnd,
 };

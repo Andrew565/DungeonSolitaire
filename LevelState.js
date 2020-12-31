@@ -3,20 +3,22 @@
 import { GameState } from "./GameState";
 
 /**
- * @typedef {object} LevelTemplate
- * @property {string} floorId
+ * @typedef LevelTemplate
+ * @property {number} floorId
  * @property {Standard52Card[]} cards
  * @property {number} monsterHP
  * @property {Standard52Card} obstacle
  * @property {boolean} obstacleAttempted
  * @property {boolean} obstacleCleared
- * @property  {"Door" | "Monster" | "Trap" | undefined} obstacleType
+ * @property  {ObstacleType | undefined} obstacleType
  * @property {boolean} goddessFound
- * @property {function} getObstacleName
- * @property {function} assignTreasures
- * @property {function} announceFloor
- * @property {function} announceLevelState
+ * @property {() => string | undefined} getObstacleName
+ * @property {VoidFunc} assignTreasures
+ * @property {VoidFunc} announceFloor
+ * @property {VoidFunc} announceLevelState
  */
+
+/** @type {LevelTemplate} */
 export const levelTemplate = {
   floorId: 0,
   cards: [],
@@ -27,26 +29,31 @@ export const levelTemplate = {
   obstacleType: undefined,
   goddessFound: false,
 
-  /** @returns {string | undefined} */
   getObstacleName() {
-    return this.obstacle.name || undefined;
+    return this.obstacle ? this.obstacle.name : undefined;
   },
 
   assignTreasures() {
     // Find all of the diamonds
     /** @type {Standard52Card[]} */
-    const diamondCards = this.cards.filter((card) => card.suit === "Diamonds").splice(0);
+    const diamondCards = this.cards
+      .filter((card) => card.suit === "Diamonds")
+      .splice(0);
 
     // Check if there are any cards left
     if (this.cards.length === 0) {
-      const lowestDiamond = diamondCards.reduce((acc, card) => (card.numberRank < acc.numberRank ? card : acc));
+      const lowestDiamond = diamondCards.reduce((acc, card) =>
+        card.numberRank < acc.numberRank ? card : acc
+      );
       this.cards.push(lowestDiamond);
     }
   },
 
   announceFloor() {
     const newFloor = this.cards.length === 0;
-    console.log(`You are ${newFloor ? "now" : "still"} on Floor ${GameState.level}`);
+    console.log(
+      `You are ${newFloor ? "now" : "still"} on Floor ${GameState.level}`
+    );
   },
 
   announceLevelState() {
@@ -56,10 +63,14 @@ export const levelTemplate = {
 };
 
 class LevelState {
-  _levels = [{ ...levelTemplate, floorId: "0" }];
+  constructor() {
+    /** @type {LevelTemplate[]} */
+    this._levels = [{ ...levelTemplate, floorId: 0 }];
+  }
 
-  addLevel(newLevel) {
-    this._levels.push(newLevel);
+  /** @param {number} nextFloorId */
+  addLevel(nextFloorId) {
+    this._levels.push({ ...levelTemplate, floorId: nextFloorId });
   }
 
   get current() {
